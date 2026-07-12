@@ -1,0 +1,7 @@
+node_modules
+.git
+admin
+mobile
+.env
+*.md
+.DS_Store

@@ -1,0 +1,23 @@
+# Render.com free Web Service (Docker)
+# Connect this repo → New → Web Service → Docker
+# Set env vars from .env (do NOT commit secrets)
+
+services:
+  - type: web
+    name: harvesthub-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: SMS_PROVIDER
+        value: console
+      - key: OTP_DEV_CODE
+        value: "000000"
+      - key: NODE_ENV
+        value: production
+      # Set these in Render dashboard (from your TiDB Cloud):
+      # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_SSL=true
+      # JWT_SECRET, APP_URL=https://YOUR-SERVICE.onrender.com
+      # ADMIN_API_KEY

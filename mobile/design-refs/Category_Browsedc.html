@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .br-scroll::-webkit-scrollbar{ display:none; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  </style>
+  <script>document.addEventListener("error", function(e){ var t=e.target; if(t && t.tagName==="IMG"){ t.style.visibility="hidden"; } }, true);</script>
+</helmet>
+<div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 50% 0%, #F0EFEC 0%, #E8E7E3 60%, #E3E2DE 100%);font-family:'Plus Jakarta Sans',system-ui,sans-serif;padding:40px 0;box-sizing:border-box;">
+
+  <div style="position:relative;width:392px;height:840px;background:#0B0B0C;border-radius:54px;padding:11px;box-shadow:0 50px 90px -30px rgba(20,20,25,.55), 0 0 0 2px rgba(0,0,0,.04), inset 0 0 0 2px rgba(255,255,255,.06);box-sizing:border-box;">
+    <div style="position:relative;width:100%;height:100%;background:{{ bg }};border-radius:44px;overflow:hidden;display:flex;flex-direction:column;">
+
+      <!-- status bar -->
+      <div style="position:relative;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;flex-shrink:0;z-index:20;">
+        <span style="font-size:15px;font-weight:600;color:{{ ink }};letter-spacing:.2px;">9:41</span>
+        <div style="position:absolute;left:50%;top:11px;transform:translateX(-50%);width:118px;height:33px;background:#0B0B0C;border-radius:20px;"></div>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span style="display:flex;gap:2px;align-items:flex-end;height:11px;">
+            <i style="width:3px;height:5px;background:{{ ink }};border-radius:1px;display:block;"></i>
+            <i style="width:3px;height:7px;background:{{ ink }};border-radius:1px;display:block;"></i>
+            <i style="width:3px;height:9px;background:{{ ink }};border-radius:1px;display:block;"></i>
+            <i style="width:3px;height:11px;background:{{ ink }};border-radius:1px;display:block;"></i>
+          </span>
+          <span style="display:inline-flex;align-items:center;"><i style="width:23px;height:11px;border:1.5px solid {{ ink }};border-radius:3px;display:inline-block;"></i><i style="width:14px;height:6px;background:{{ ink }};border-radius:1.5px;position:absolute;margin-left:-19px;"></i></span>
+        </div>
+      </div>
+
+      <!-- header -->
+      <div style="display:flex;align-items:center;gap:12px;padding:6px 22px 14px;flex-shrink:0;">
+        <a href="Shop Home.dc.html" style="width:44px;height:44px;border-radius:14px;border:1.5px solid {{ line }};background:{{ surface }};display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="{{ ink }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <h1 style="margin:0;flex:1;font-size:22px;font-weight:700;color:{{ ink }};letter-spacing:-.5px;">All Categories</h1>
+        <button style="position:relative;width:44px;height:44px;border-radius:14px;background:{{ surface }};border:1.5px solid {{ line }};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6h15l-1.5 8.5a2 2 0 01-2 1.7H9.2a2 2 0 01-2-1.6L5.2 4H3" stroke="{{ ink }}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.4" fill="{{ ink }}"/><circle cx="17" cy="20" r="1.4" fill="{{ ink }}"/></svg>
+          <span style="position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:var(--ac);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid {{ bg }};">2</span>
+        </button>
+      </div>
+
+      <!-- search -->
+      <div style="padding:0 22px 14px;flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:10px;height:46px;background:{{ surface }};border:1.5px solid {{ line }};border-radius:15px;padding:0 14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="{{ muted }}" stroke-width="1.8"/><path d="M20 20l-3.2-3.2" stroke="{{ muted }}" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span style="font-size:14.5px;font-weight:500;color:{{ muted }};">Search in {{ activeName }}</span>
+        </div>
+      </div>
+
+      <!-- split body -->
+      <div style="flex:1;display:flex;overflow:hidden;">
+
+        <!-- left rail -->
+        <div class="br-scroll" style="width:94px;flex-shrink:0;overflow-y:auto;padding:4px 0 24px;-ms-overflow-style:none;scrollbar-width:none;background:{{ railBg }};">
+          <sc-for list="{{ rail }}" as="r" hint-placeholder-count="8">
+            <button onClick="{{ r.onClick }}" style="{{ r.style }}">
+              <sc-if value="{{ r.active }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:0;top:13px;bottom:13px;width:3px;border-radius:0 2px 2px 0;background:var(--ac);"></span></sc-if>
+              <div style="{{ r.bubble }}"><div style="transform:scale(.86);display:flex;">{{ r.icon }}</div></div>
+              <span style="font-size:11px;line-height:1.2;text-align:center;color:{{ r.labelColor }};font-weight:{{ r.labelWeight }};">{{ r.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <!-- right grid -->
+        <div class="br-scroll" style="flex:1;overflow-y:auto;padding:6px 18px 30px;-ms-overflow-style:none;scrollbar-width:none;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:4px 4px 14px;">
+            <h2 style="margin:0;font-size:18px;font-weight:700;color:{{ ink }};letter-spacing:-.3px;">{{ activeName }}</h2>
+            <span style="font-size:12.5px;font-weight:600;color:{{ muted }};">{{ subCount }} types</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;animation:fadeUp .25s ease;" key="{{ activeKey }}">
+            <sc-for list="{{ subs }}" as="s" hint-placeholder-count="6">
+              <a href="{{ s.href }}" style="display:flex;flex-direction:column;cursor:pointer;text-decoration:none;">
+                <div style="position:relative;overflow:hidden;width:100%;height:94px;border-radius:18px;background:{{ s.tint }};display:flex;align-items:center;justify-content:center;">
+                  <div style="transform:scale(1.18);display:flex;">{{ s.icon }}</div>
+                  <img src="{{ s.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12px;box-sizing:border-box;" />
+                </div>
+                <p style="margin:9px 0 2px;font-size:13.5px;font-weight:600;color:{{ ink }};line-height:1.25;">{{ s.n }}</p>
+                <span style="font-size:12px;font-weight:500;color:{{ muted }};">{{ s.c }} items</span>
+              </a>
+            </sc-for>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- home indicator -->
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:{{ ink }};opacity:.22;z-index:30;"></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:480,&quot;height&quot;:900},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#1E8C57&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { activeCat: 'rice' };
+
+  cats = [
+    { id: 'rice',     name: 'Rice',         tint: '#EDE7D6' },
+    { id: 'dal',      name: 'Dal & Pulses', tint: '#E7E0CB' },
+    { id: 'veg',      name: 'Vegetables',   tint: '#DDE8DA' },
+    { id: 'fruit',    name: 'Fruits',       tint: '#EBDFD8' },
+    { id: 'atta',     name: 'Wheat & Atta', tint: '#ECE3D2' },
+    { id: 'spice',    name: 'Spices',       tint: '#EADBD0' },
+    { id: 'oil',      name: 'Oil & Ghee',   tint: '#EDE6D0' },
+    { id: 'dryfruit', name: 'Dry Fruits',   tint: '#E8E1D4' },
+  ];
+
+  subData = {
+    rice:     [ ['Basmati','rice',12],['Sona Masoori','rice',8],['Brown Rice','seeds',6],['Idli Rice','rice',5],['Jasmine','rice',4],['Poha','seeds',7] ],
+    dal:      [ ['Toor Dal','dal',9],['Moong Dal','dal',8],['Chana Dal','dal',7],['Urad Dal','dal',5],['Masoor Dal','dal',6],['Rajma','seeds',4],['Chickpeas','seeds',5] ],
+    veg:      [ ['Leafy Greens','leaf',14],['Root Veg','veg',10],['Gourds','veg',8],['Tomatoes','fruit',6],['Onions','veg',5],['Beans','leaf',7] ],
+    fruit:    [ ['Bananas','fruit',6],['Apples','fruit',8],['Citrus','circle',7],['Berries','berry',5],['Mangoes','fruit',4],['Melons','circle',3] ],
+    atta:     [ ['Whole Wheat','atta',5],['Multigrain','atta',4],['Maida','seeds',3],['Suji / Rava','seeds',3],['Besan','seeds',4] ],
+    spice:    [ ['Whole Spices','jar',9],['Ground Spices','jar',8],['Masala Blends','jar',6],['Red Chilli','spice',5],['Turmeric','jar',4] ],
+    oil:      [ ['Sunflower Oil','oil',4],['Mustard Oil','oil',3],['Olive Oil','oil',3],['Ghee','drop',5],['Coconut Oil','drop',4] ],
+    dryfruit: [ ['Almonds','dryfruit',6],['Cashews','dryfruit',5],['Raisins','seeds',4],['Walnuts','dryfruit',4],['Pistachios','dryfruit',3],['Dates','fruit',5] ],
+  };
+
+  componentDidMount() {
+    try {
+      const c = new URLSearchParams(location.search).get('cat');
+      if (c && this.subData[c]) this.setState({ activeCat: c });
+    } catch (e) {}
+  }
+
+  icon(id) {
+    const S = '#3A372F';
+    let k = 0;
+    const P = (d) => React.createElement('path', { key: k++, d, stroke: S, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' });
+    const Dot = (cx, cy, r) => React.createElement('circle', { key: k++, cx, cy, r, fill: S });
+    const Ring = (cx, cy, r) => React.createElement('circle', { key: k++, cx, cy, r, stroke: S, strokeWidth: 2, fill: 'none' });
+    const E = (cx, cy, rx, ry, rot) => React.createElement('ellipse', { key: k++, cx, cy, rx, ry, transform: 'rotate(' + rot + ' ' + cx + ' ' + cy + ')', stroke: S, strokeWidth: 2, fill: 'none' });
+    const G = (transform, d) => React.createElement('path', { key: k++, d, transform, stroke: S, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' });
+    const map = {
+      rice: [ P('M8 25 H40 A16 16 0 0 1 8 25 Z'), P('M12 25 A12 8 0 0 1 36 25'), P('M19 11 q2 3 0 6'), P('M27 10 q2 3 0 6') ],
+      dal: [ P('M8 25 H40 A16 16 0 0 1 8 25 Z'), Dot(18,21,1.5), Dot(24,20,1.5), Dot(30,21,1.5), Dot(21,23,1.5), Dot(27,23,1.5) ],
+      veg: [ P('M24 40 V22'), P('M24 30 C18 30 13 26 13 19 C20 19 24 23 24 30 Z'), P('M24 26 C30 26 35 22 35 15 C28 15 24 19 24 26 Z') ],
+      fruit: [ P('M24 19 C20 13 12 16 13 24 C14 32 20 39 24 39 C28 39 34 32 35 24 C36 16 28 13 24 19 Z'), P('M24 17 C26 12 31 11 34 13 C32 17 27 19 24 17 Z'), P('M24 17 V12') ],
+      atta: [ P('M24 41 V15'), E(24,13,2.6,4.5,0), E(19,19,2.4,4,-34), E(29,19,2.4,4,34), E(19,26,2.4,4,-34), E(29,26,2.4,4,34), E(19,33,2.4,4,-34), E(29,33,2.4,4,34) ],
+      spice: [ P('M15 17 C23 15 31 21 31 30 C31 35 27 38 23 37 C14 34 11 23 15 17 Z'), P('M15 17 L12 12'), P('M12 12 q-2 -1 -4 0') ],
+      oil: [ P('M21 9 h6 v4 h-6 z'), P('M22 13 v3'), P('M26 13 v3'), P('M19 16 h10 a3 3 0 0 1 3 3 v15 a3 3 0 0 1 -3 3 h-10 a3 3 0 0 1 -3 -3 v-15 a3 3 0 0 1 3 -3 z'), P('M16 25 h16') ],
+      dryfruit: [ G('translate(19 27) rotate(-22)', 'M0 -8 C5 -4 5 4 0 8 C-5 4 -5 -4 0 -8 Z'), G('translate(30 21) rotate(22)', 'M0 -8 C5 -4 5 4 0 8 C-5 4 -5 -4 0 -8 Z') ],
+      leaf: [ P('M24 39 C15 34 12 22 15 12 C25 15 33 24 30 38 Z'), P('M21 33 L26 18') ],
+      drop: [ P('M24 10 C30 19 33 24 33 30 A9 9 0 0 1 15 30 C15 24 18 19 24 10 Z') ],
+      seeds: [ E(19,20,2.3,3.8,-28), E(27,18,2.3,3.8,24), E(22,27,2.3,3.8,-14), E(30,26,2.3,3.8,30), E(16,29,2.3,3.8,18) ],
+      jar: [ P('M18 17 h12 v17 a3 3 0 0 1 -3 3 h-6 a3 3 0 0 1 -3 -3 z'), P('M17 12 h14 v5 h-14 z'), Dot(22,23,1), Dot(26,23,1), Dot(24,27,1) ],
+      circle: [ Ring(24,25,13), P('M24 12 V38'), P('M11 25 H37') ],
+      berry: [ Ring(20,28,5), Ring(28,28,5), Ring(24,20,5), P('M24 15 L24 11') ],
+    };
+    return React.createElement('svg', { width: 48, height: 48, viewBox: '0 0 48 48', fill: 'none' }, map[id] || []);
+  }
+
+  catDefault = { rice:'Rice', dal:'Lentils', veg:'Tomatoes', fruit:'Apple', atta:'Flour', spice:'Turmeric', oil:'Olive Oil', dryfruit:'Almonds' };
+  subImgMap = {
+    'Basmati':'Basmati Rice','Brown Rice':'Brown Rice','Sona Masoori':'Rice','Idli Rice':'Rice','Jasmine':'Rice','Poha':'Rice',
+    'Toor Dal':'Lentils','Moong Dal':'Lentils','Chana Dal':'Lentils','Urad Dal':'Lentils','Masoor Dal':'Red Lentils','Rajma':'Kidney Beans','Chickpeas':'Chickpeas',
+    'Leafy Greens':'Spinach','Root Veg':'Carrots','Gourds':'Tomatoes','Tomatoes':'Tomatoes','Onions':'Onion','Beans':'Green Beans',
+    'Bananas':'Banana','Apples':'Apple','Citrus':'Orange','Berries':'Strawberries','Mangoes':'Mango','Melons':'Watermelon',
+    'Whole Wheat':'Flour','Multigrain':'Flour','Maida':'Plain Flour','Suji / Rava':'Semolina','Besan':'Flour',
+    'Whole Spices':'Cinnamon','Ground Spices':'Paprika','Masala Blends':'Turmeric','Red Chilli':'Chilli Powder','Turmeric':'Turmeric',
+    'Sunflower Oil':'Sunflower Oil','Mustard Oil':'Vegetable Oil','Olive Oil':'Olive Oil','Ghee':'Butter','Coconut Oil':'Vegetable Oil',
+    'Almonds':'Almonds','Cashews':'Cashew Nuts','Raisins':'Raisins','Walnuts':'Walnuts','Pistachios':'Pistachio','Dates':'Dates',
+  };
+  foodImg(catId, name) {
+    const ing = this.subImgMap[name] || this.catDefault[catId] || 'Rice';
+    return 'https://www.themealdb.com/images/ingredients/' + encodeURIComponent(ing) + '.png';
+  }
+
+  renderVals() {
+    const { activeCat } = this.state;
+    const ac = this.props.accentColor || '#1E8C57';
+    const ink = '#1A1A18', muted = '#8E8C86', surface = '#FFFFFF', bg = '#F7F6F3', line = '#E8E6E1';
+    if (typeof document !== 'undefined') document.documentElement.style.setProperty('--ac', ac);
+
+    const active = this.cats.find(c => c.id === activeCat) || this.cats[0];
+
+    const railBtnBase = 'position:relative;width:100%;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 4px;cursor:pointer;';
+    const rail = this.cats.map(c => {
+      const isOn = c.id === activeCat;
+      return {
+        label: c.name,
+        active: isOn,
+        labelColor: isOn ? ink : muted,
+        labelWeight: isOn ? 700 : 500,
+        icon: this.icon(c.id),
+        style: railBtnBase + (isOn ? 'background:' + surface + ';' : ''),
+        bubble: 'width:52px;height:52px;border-radius:17px;display:flex;align-items:center;justify-content:center;background:' + c.tint + ';' + (isOn ? 'box-shadow:0 0 0 2px ' + ac + ';' : ''),
+        onClick: () => this.setState({ activeCat: c.id }),
+      };
+    });
+
+    const subs = (this.subData[activeCat] || []).map(([n, ic, c]) => ({
+      n, c, tint: active.tint, icon: this.icon(ic),
+      img: this.foodImg(activeCat, n),
+      href: 'Product List.dc.html?cat=' + activeCat + '&sub=' + encodeURIComponent(n),
+    }));
+
+    return {
+      ink, muted, surface, bg, line,
+      imgErr: (e) => { e.target.style.display = 'none'; },
+      railBg: '#F1F0EC',
+      rail,
+      subs,
+      activeName: active.name,
+      activeKey: activeCat,
+      subCount: subs.length,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "harvesthub-backend",
+  "version": "1.0.0",
+  "description": "Backend for HarvestHub - wholesale grains marketplace (buy/sell dal, rajma, chana)",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "db:seed": "bun run src/db/seed.ts"
+  },
+  "dependencies": {
+    "hono": "^4.6.14",
+    "mysql2": "^3.11.5",
+    "zod": "^3.24.1",
+    "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.0.9",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/bun": "^1.1.14",
+    "typescript": "^5.7.2"
+  }
+}

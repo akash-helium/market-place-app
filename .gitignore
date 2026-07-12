@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Non-backend apps (stay local / separate repos)
+mobile/
+admin/
+dist/
+app/
+
+# Build / OS junk
+.DS_Store
+.expo/
+.tmp-pdf/
+*.log
+coverage/
+.turbo/
+
+# Runtime uploads (keep seed images tracked)
+uploads/*
+!uploads/seed/
+!uploads/seed/**
+
+# Lock noise (optional — keep bun.lockb tracked)
+# bun.lockb

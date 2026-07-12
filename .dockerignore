@@ -1,7 +1,12 @@
 node_modules
 .git
+.github
 admin
 mobile
+app
+dist
 .env
-*.md
+.env.*
+!.env.example
 .DS_Store
+.tmp-pdf

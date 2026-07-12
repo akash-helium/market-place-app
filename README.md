@@ -1,28 +1,34 @@
 # HarvestHub Backend
 
-Complete backend for the HarvestHub wholesale grains marketplace (buy/sell dal, rajma, chana), built exactly to the app-flow proposal. Bun + TypeScript + Hono + MySQL.
+Bun + TypeScript + Hono + MySQL/TiDB API for the wholesale grains marketplace.
 
-Every "helper" from section 5 of the proposal is implemented: SMS service, Login keeper, Profile keeper, Photo storage, Product list, Bulk upload helper, Cart & order, Payment service, Notification service, Ratings, Verification (KYC), Search helper, Location service, Customer chat, and Share link.
+This repo is **backend-only**. Mobile (`mobile/`) and admin (`admin/`) stay on your machine (gitignored) — push only what is here.
 
 ## Quick start
 
 ```bash
-# 1. Prerequisites: Bun 1.x, MySQL 8+ (or MariaDB 10.11+)
-cp .env.example .env        # fill in DB credentials + JWT_SECRET
-
+cp .env.example .env        # fill TiDB/MySQL + JWT_SECRET
 bun install
-bun run db:migrate          # creates database + all tables
-bun run db:seed             # loads the 8 dal categories + subtypes
+bun run db:migrate
+bun run db:seed
 bun run dev                 # http://localhost:3000
 ```
 
-In development the OTP is printed to the server console (`SMS_PROVIDER=console`) and the payment gateway is mocked (`PAYMENT_PROVIDER=mock`). Both are pluggable interfaces in `src/services/index.ts` — wire in MSG91/Twilio and Razorpay there for production.
+**Demo login (no SMS):** phone `9810817196`, OTP `000000` (`SMS_PROVIDER=console`).
+
+## Deploy (Render free)
+
+1. Push this repo to GitHub  
+2. Render → New Web Service → Docker  
+3. Copy env from `.env.example` (set `APP_URL`, `DB_*`, `JWT_SECRET`, `SMS_PROVIDER=console`, `OTP_DEV_CODE=000000`)
+
+Health check: `GET /health`
 
 ## The whole journey, as API calls
 
 ```
-1. POST /api/auth/request-otp   {"phone":"9810817196"}        → SMS with 6 numbers
-2. POST /api/auth/verify-otp    {"phone":"...","code":"482915"} → { token, isNewUser }
+1. POST /api/auth/request-otp   {"phone":"9810817196"}        → use OTP 000000 in console mode
+2. POST /api/auth/verify-otp    {"phone":"...","code":"000000"} → { token, isNewUser }
 3. PUT  /api/shops/me           (Bearer token) shop name, photos, address, note, contacts
 4. GET  /api/categories         → home screen tiles with item counts
 5. GET  /api/products?categoryId=1&subcategoryId=1&sort=price_desc

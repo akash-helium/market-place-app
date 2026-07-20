@@ -116,7 +116,7 @@ shopRoutes.get("/:id/share-link", async (c) => {
     ok: true,
     data: {
       url,
-      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shop.name} on HarvestHub: ${url}`)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shop.name} on Agro Bazaar: ${url}`)}`,
     },
   });
 });

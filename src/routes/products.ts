@@ -5,10 +5,58 @@ import type { RowDataPacket } from "mysql2";
 import { execute, query, queryOne, withTransaction } from "../config/db";
 import { env } from "../config/env";
 import { requireAuth, requireShop, type AppEnv } from "../middleware/auth";
+import { recordProductPrice } from "../services/priceHistory";
 import { toPaise } from "../utils";
 
 export const categoryRoutes = new Hono<AppEnv>();
 export const productRoutes = new Hono<AppEnv>();
+
+function priceChangeSummary(
+  points: Array<{ pricePaise: number | null; recordedAt: string | Date }>
+) {
+  const priced = points.filter((p) => p.pricePaise != null) as Array<{
+    pricePaise: number;
+    recordedAt: string | Date;
+  }>;
+  if (priced.length === 0) {
+    return {
+      previousPaise: null as number | null,
+      changePaise: null as number | null,
+      changePct: null as number | null,
+      dayAgoPaise: null as number | null,
+      direction: "flat" as const,
+    };
+  }
+  const current = priced[priced.length - 1]!;
+  const previous = priced.length >= 2 ? priced[priced.length - 2]! : null;
+  const dayAgoCutoff = Date.now() - 24 * 60 * 60 * 1000;
+  let dayAgo: (typeof priced)[0] | null = null;
+  for (let i = priced.length - 1; i >= 0; i--) {
+    const t = new Date(priced[i]!.recordedAt).getTime();
+    if (t <= dayAgoCutoff) {
+      dayAgo = priced[i]!;
+      break;
+    }
+  }
+  if (!dayAgo && priced.length >= 2) dayAgo = priced[0]!;
+
+  const baseline = dayAgo ?? previous;
+  const changePaise = baseline ? current.pricePaise - baseline.pricePaise : null;
+  const changePct =
+    baseline && baseline.pricePaise !== 0 && changePaise != null
+      ? Math.round((changePaise / baseline.pricePaise) * 10000) / 100
+      : null;
+  const direction =
+    changePaise == null || changePaise === 0 ? "flat" : changePaise > 0 ? "up" : "down";
+
+  return {
+    previousPaise: previous?.pricePaise ?? null,
+    changePaise,
+    changePct,
+    dayAgoPaise: dayAgo?.pricePaise ?? null,
+    direction: direction as "up" | "down" | "flat",
+  };
+}
 
 /* ============================================================
  * 4.5 Home screen — "big tiles for each kind of dal"
@@ -160,6 +208,55 @@ productRoutes.get("/", async (c) => {
 });
 
 /* 4.8 One product closely — details + who is selling it */
+/* Price history must be registered before bare /:id */
+productRoutes.get("/:id/price-history", async (c) => {
+  const id = Number(c.req.param("id"));
+  const days = Math.min(365, Math.max(1, Number(c.req.query("days") ?? 30)));
+  const product = await queryOne(`SELECT id FROM products WHERE id = ? AND status = 'live'`, [id]);
+  if (!product) return c.json({ ok: false, error: "Product not found" }, 404);
+
+  const rows = await query<RowDataPacket & { pricePaise: number | null; mrpPaise: number | null; recordedAt: Date; source: string }>(
+    `SELECT price_paise AS pricePaise, mrp_paise AS mrpPaise, recorded_at AS recordedAt, source
+       FROM product_price_history
+      WHERE product_id = ? AND recorded_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      ORDER BY recorded_at ASC, id ASC`,
+    [id, days]
+  );
+
+  // If nothing in window, still return latest few points so chart isn't empty
+  let points = rows;
+  if (points.length === 0) {
+    points = await query(
+      `SELECT price_paise AS pricePaise, mrp_paise AS mrpPaise, recorded_at AS recordedAt, source
+         FROM product_price_history
+        WHERE product_id = ?
+        ORDER BY recorded_at DESC, id DESC
+        LIMIT 60`,
+      [id]
+    );
+    points = [...points].reverse();
+  }
+
+  const change = priceChangeSummary(
+    points.map((p) => ({ pricePaise: p.pricePaise, recordedAt: p.recordedAt }))
+  );
+
+  return c.json({
+    ok: true,
+    data: {
+      productId: id,
+      days,
+      points: points.map((p) => ({
+        pricePaise: p.pricePaise,
+        mrpPaise: p.mrpPaise,
+        recordedAt: p.recordedAt,
+        source: p.source,
+      })),
+      change,
+    },
+  });
+});
+
 productRoutes.get("/:id", async (c) => {
   const id = Number(c.req.param("id"));
   const product = await queryOne<RowDataPacket>(
@@ -179,12 +276,32 @@ productRoutes.get("/:id", async (c) => {
   );
   if (!product) return c.json({ ok: false, error: "Product not found" }, 404);
 
-  const [photos, phones, emails] = await Promise.all([
+  const [photos, phones, emails, history] = await Promise.all([
     query(`SELECT url, is_cover AS isCover, position FROM product_photos WHERE product_id = ? ORDER BY is_cover DESC, position`, [id]),
     query(`SELECT value, label FROM shop_contacts WHERE shop_id = ? AND kind = 'phone'`, [product.shopId]),
     query(`SELECT value, label FROM shop_contacts WHERE shop_id = ? AND kind = 'email'`, [product.shopId]),
+    query<RowDataPacket & { pricePaise: number | null; recordedAt: Date }>(
+      `SELECT price_paise AS pricePaise, recorded_at AS recordedAt
+         FROM product_price_history WHERE product_id = ?
+         ORDER BY recorded_at ASC, id ASC`,
+      [id]
+    ),
   ]);
-  return c.json({ ok: true, data: { ...product, photos, sellerPhones: phones, sellerEmails: emails } });
+
+  const change = priceChangeSummary(
+    history.map((h) => ({ pricePaise: h.pricePaise, recordedAt: h.recordedAt }))
+  );
+
+  return c.json({
+    ok: true,
+    data: {
+      ...product,
+      photos,
+      sellerPhones: phones,
+      sellerEmails: emails,
+      priceChange: change,
+    },
+  });
 });
 
 /* ============================================================
@@ -232,10 +349,73 @@ productRoutes.post("/", requireAuth, requireShop, async (c) => {
         );
       }
     }
+    await recordProductPrice(
+      id,
+      d.priceRupees !== undefined ? toPaise(d.priceRupees) : null,
+      {
+        mrpPaise: d.mrpRupees !== undefined ? toPaise(d.mrpRupees) : null,
+        source: "create",
+        conn,
+      }
+    );
     return id;
   });
 
   return c.json({ ok: true, data: { productId, message: "Your product is now live" } }, 201);
+});
+
+/* Seller: set or nudge price (always recorded in history) */
+const priceAdjustSchema = z.object({
+  priceRupees: z.number().nonnegative().nullable().optional(),
+  adjustRupees: z.number().optional(),
+  mrpRupees: z.number().nonnegative().nullable().optional(),
+}).refine((v) => v.priceRupees !== undefined || v.adjustRupees !== undefined, {
+  message: "Provide priceRupees or adjustRupees",
+});
+
+productRoutes.patch("/:id/price", requireAuth, requireShop, async (c) => {
+  const body = priceAdjustSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!body.success) {
+    return c.json({ ok: false, error: "Invalid price update", details: body.error.flatten() }, 400);
+  }
+  const id = Number(c.req.param("id"));
+  const shopId = c.get("user").shopId!;
+  const row = await queryOne<RowDataPacket & { price_paise: number | null; mrp_paise: number | null }>(
+    `SELECT id, price_paise, mrp_paise FROM products WHERE id = ? AND shop_id = ? AND status = 'live'`,
+    [id, shopId]
+  );
+  if (!row) return c.json({ ok: false, error: "Product not found in your shop" }, 404);
+
+  let nextPaise: number | null = row.price_paise;
+  if (body.data.priceRupees !== undefined) {
+    nextPaise = body.data.priceRupees == null ? null : toPaise(body.data.priceRupees);
+  } else if (body.data.adjustRupees !== undefined) {
+    const base = row.price_paise ?? 0;
+    nextPaise = Math.max(0, base + toPaise(body.data.adjustRupees));
+  }
+  const nextMrp =
+    body.data.mrpRupees !== undefined
+      ? body.data.mrpRupees == null
+        ? null
+        : toPaise(body.data.mrpRupees)
+      : row.mrp_paise;
+
+  await execute(`UPDATE products SET price_paise = ?, mrp_paise = ? WHERE id = ?`, [
+    nextPaise,
+    nextMrp,
+    id,
+  ]);
+  await recordProductPrice(id, nextPaise, { mrpPaise: nextMrp, source: "adjust" });
+
+  return c.json({
+    ok: true,
+    data: {
+      productId: id,
+      pricePaise: nextPaise,
+      mrpPaise: nextMrp,
+      message: "Price updated",
+    },
+  });
 });
 
 /* Edit / stock toggle */
@@ -246,7 +426,10 @@ productRoutes.put("/:id", requireAuth, requireShop, async (c) => {
   const id = Number(c.req.param("id"));
   const shopId = c.get("user").shopId!;
 
-  const owned = await queryOne(`SELECT id FROM products WHERE id = ? AND shop_id = ?`, [id, shopId]);
+  const owned = await queryOne<RowDataPacket & { price_paise: number | null; mrp_paise: number | null }>(
+    `SELECT id, price_paise, mrp_paise FROM products WHERE id = ? AND shop_id = ?`,
+    [id, shopId]
+  );
   if (!owned) return c.json({ ok: false, error: "Product not found in your shop" }, 404);
 
   const sets: string[] = [];
@@ -271,6 +454,13 @@ productRoutes.put("/:id", requireAuth, requireShop, async (c) => {
         [id, d.photoUrls[i]!, i === 0 ? 1 : 0, i]
       );
     }
+  }
+  if (d.priceRupees !== undefined || d.mrpRupees !== undefined) {
+    const pricePaise =
+      d.priceRupees !== undefined ? toPaise(d.priceRupees) : owned.price_paise;
+    const mrpPaise =
+      d.mrpRupees !== undefined ? toPaise(d.mrpRupees) : owned.mrp_paise;
+    await recordProductPrice(id, pricePaise, { mrpPaise, source: "edit" });
   }
   return c.json({ ok: true, data: { message: "Product updated" } });
 });
@@ -432,7 +622,7 @@ productRoutes.post("/bulk", requireAuth, requireShop, async (c) => {
       const stockRaw = cell(r, "stock_units", "stock");
       const stock = !stockRaw ? null : Number(stockRaw);
 
-      await execute(
+      const res = await execute(
         `INSERT INTO products (shop_id, category_id, subcategory_id, title, description,
                                pack_size, price_paise, mrp_paise, in_stock, stock_units)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -443,6 +633,10 @@ productRoutes.post("/bulk", requireAuth, requireShop, async (c) => {
          mrp !== null && Number.isFinite(mrp) ? toPaise(mrp) : null,
          inStock ? 1 : 0, stock]
       );
+      await recordProductPrice(Number(res.insertId), price !== null ? toPaise(price) : null, {
+        mrpPaise: mrp !== null && Number.isFinite(mrp) ? toPaise(mrp) : null,
+        source: "bulk",
+      });
       ok++;
     } catch (e) {
       errors.push({ row: rowNo, error: e instanceof Error ? e.message : "Unknown error" });

@@ -11,7 +11,7 @@ import { formatINR } from "../utils";
  * ==========================================================*/
 export const smsService = {
   async sendOtp(phone: string, code: string): Promise<void> {
-    const message = `Your HarvestHub code is ${code}. It expires in 5 minutes.`;
+    const message = `Your Agro Bazaar code is ${code}. It expires in 5 minutes.`;
     switch (env.SMS_PROVIDER) {
       case "console":
         console.log(`[SMS → ${phone}] ${message}`);

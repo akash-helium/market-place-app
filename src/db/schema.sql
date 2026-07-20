@@ -137,6 +137,19 @@ CREATE TABLE IF NOT EXISTS product_photos (
   INDEX idx_photos_product (product_id)
 ) ENGINE=InnoDB;
 
+-- ---------- Price history (stock-style chart) ----------
+-- One row per price change (and initial list). NULL price_paise = N/A.
+CREATE TABLE IF NOT EXISTS product_price_history (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id   BIGINT UNSIGNED NOT NULL,
+  price_paise  BIGINT UNSIGNED NULL,
+  mrp_paise    BIGINT UNSIGNED NULL,
+  source       ENUM('create','edit','bulk','seed','adjust') NOT NULL DEFAULT 'edit',
+  recorded_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pph_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  INDEX idx_pph_product_time (product_id, recorded_at)
+) ENGINE=InnoDB;
+
 -- ---------- Bulk upload helper ----------
 CREATE TABLE IF NOT EXISTS bulk_uploads (
   id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

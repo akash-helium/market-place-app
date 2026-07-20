@@ -36,7 +36,7 @@ app.get("/", (c) =>
   c.json({
     ok: true,
     data: {
-      name: "HarvestHub API",
+      name: "Agro Bazaar API",
       version: "1.0.0",
       docs: "See README.md for the full endpoint list",
     },
@@ -70,4 +70,4 @@ export default {
   fetch: app.fetch,
 };
 
-console.log(`🌾 HarvestHub API running on ${env.APP_URL} (port ${env.PORT})`);
+console.log(`🌾 Agro Bazaar API running on ${env.APP_URL} (port ${env.PORT})`);

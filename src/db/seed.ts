@@ -15,7 +15,7 @@ const IMG = {
   kabli: `${APP}/uploads/seed/kabli.jpg`,
   matar: `${APP}/uploads/seed/matar.jpg`,
   lobiya: `${APP}/uploads/seed/lobiya.jpg`,
-  toor: `${APP}/uploads/seed/chana.jpg`,
+  toor: `${APP}/uploads/seed/toor.jpg`,
   shop1: `${APP}/uploads/seed/shop1.jpg`,
   shop2: `${APP}/uploads/seed/shop2.jpg`,
   shop3: `${APP}/uploads/seed/shop3.jpg`,
